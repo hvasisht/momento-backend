@@ -34,7 +34,20 @@ jobs:
           docker push $IMAGE:latest
 
       - name: Deploy to Cloud Run
+        env:
+          DB_PASS: ${{ secrets.DB_PASS }}
         run: |
+          cat > /tmp/envvars.yaml <<EOF
+          INSTANCE_CONNECTION_NAME: "moment-486719:us-central1:moment-db"
+          DB_NAME: "momento"
+          DB_USER: "momento_admin"
+          DB_PASS: "${DB_PASS}"
+          FIREBASE_PROJECT_ID: "momento-504b2"
+          BQ_PROJECT: "moment-486719"
+          BQ_DATASET: "new_moments_processed"
+          BQ_TABLE_COMPAT: "compatibility_results"
+          BQ_TABLE_USERS: "users_processed"
+          EOF
           gcloud run deploy $SERVICE \
             --image $IMAGE:latest \
             --region $REGION \
@@ -42,5 +55,5 @@ jobs:
             --vpc-connector momento-connector \
             --vpc-egress private-ranges-only \
             --allow-unauthenticated \
-            --set-env-vars "INSTANCE_CONNECTION_NAME=moment-486719:us-central1:moment-db,DB_NAME=momento,DB_USER=momento_admin,FIREBASE_PROJECT_ID=momento-504b2,BQ_PROJECT=moment-486719,BQ_DATASET=new_moments_processed,BQ_TABLE_COMPAT=compatibility_results,BQ_TABLE_USERS=users_processed" \
-            --set-env-vars "DB_PASS=${{ secrets.DB_PASS }}"
+            --project $PROJECT_ID \
+            --env-vars-file /tmp/envvars.yaml
