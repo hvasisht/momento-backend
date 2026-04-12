@@ -1,0 +1,59 @@
+name: Deploy Frontend to Cloud Run
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+
+env:
+  PROJECT_ID: moment-486719
+  SERVICE:    momento-frontend
+  REGION:     us-central1
+  IMAGE:      us-central1-docker.pkg.dev/moment-486719/momento-api/momento-frontend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build frontend
+        run: node scripts/build-v64.js
+        working-directory: frontend
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+
+      - name: Build and push image
+        run: |
+          docker build --platform linux/amd64 -f frontend/Dockerfile.frontend \
+            -t $IMAGE:$GITHUB_SHA \
+            -t $IMAGE:latest \
+            frontend/
+          docker push $IMAGE:$GITHUB_SHA
+          docker push $IMAGE:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy $SERVICE \
+            --image $IMAGE:latest \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --project $PROJECT_ID \
+            --port 8080 \
+            --quiet

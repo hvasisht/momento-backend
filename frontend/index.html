@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Momento</title>
+  <link rel="stylesheet" href="./src/styles/app.css" />
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script>
+    firebase.initializeApp({
+      apiKey: "AIzaSyBrlqOMFKASYACdLqDvCB10XAljIgoJvzs",
+      authDomain: "momento-504b2.firebaseapp.com",
+      projectId: "momento-504b2",
+      storageBucket: "momento-504b2.firebasestorage.app",
+      messagingSenderId: "58286946946",
+      appId: "1:58286946946:web:cec84598c760e5e630529b"
+    });
+    var API_BASE = "https://momento-api-329431711809.us-central1.run.app";
+  </script>
+
+  <script src="./vendor/react.production.min.js"></script>
+  <script src="./vendor/react-dom.production.min.js"></script>
+  <script src="./src/books.bundled.js?v=65"></script>
+  <script src="./src/books.covers.js?v=65"></script>
+  <script src="./src/books.catalog.js?v=65"></script>
+  <script>
+    /* Clear old text-format book caches so EPUB HTML is fetched fresh */
+    try {
+      Object.keys(localStorage).forEach(function(k) {
+        if (!k.startsWith('momento_book_')) return;
+        try {
+          var b = JSON.parse(localStorage.getItem(k));
+          if (b && b.pages && b.pages.length && !b.pages[0].html) {
+            localStorage.removeItem(k);
+          }
+        } catch(e) { localStorage.removeItem(k); }
+      });
+    } catch(e) {}
+  </script>
+  <script src="./src/app.compiled.js"></script>
+</body>
+</html>
