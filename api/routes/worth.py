@@ -1,4 +1,6 @@
 import asyncio
+import os
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
 from google.cloud import bigquery
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,6 +9,8 @@ from api.auth import get_current_user
 from api.database import get_db
 from api.bigquery import BQ_PROJECT, BQ_DATASET, BQ_TABLE_COMPAT, BQ_TABLE_USERS, get_bq_client
 from api.hashing import make_user_id
+
+PIPELINE_BASE = os.getenv("PIPELINE_BASE_URL", "https://moment-pipeline-329431711809.us-central1.run.app")
 
 router = APIRouter()
 
@@ -106,3 +110,28 @@ async def get_worth_profile(
         raise HTTPException(status_code=404, detail="Profile not found")
 
     return dict(rows[0].items())
+
+
+@router.get("/worth/rankings")
+async def get_worth_rankings(
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Fetch ranked compatible readers from the pipeline (triggers BT model refit for this user)."""
+    result = await db.execute(
+        text("SELECT first_name, last_name FROM users WHERE firebase_uid = :uid"),
+        {"uid": user["uid"]},
+    )
+    row = result.mappings().fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    bq_user_id = make_user_id(row["first_name"] + " " + row["last_name"])
+
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.get(f"{PIPELINE_BASE}/rankings/{bq_user_id}")
+            resp.raise_for_status()
+            return resp.json()
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Rankings unavailable: {str(e)}")

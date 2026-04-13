@@ -13,6 +13,7 @@ function transformMatches(rows) {
     const id = row.matched_user_id;
     if (!byUser[id]) {
       byUser[id] = {
+        id: id,
         name: row.character_name || ("Reader "+id),
         bio: row.profession || "",
         gender: row.gender || "",
@@ -31,7 +32,7 @@ function transformMatches(rows) {
   const avg = function(arr){ return arr.length ? Math.round(arr.reduce(function(a,b){return a+b;},0)/arr.length) : 0; };
   return Object.values(byUser).map(function(u) {
     return {
-      name:u.name, bio:u.bio, gender:u.gender, since:u.since,
+      id:u.id, name:u.name, bio:u.bio, gender:u.gender, since:u.since,
       rt:avg(u._tR), ct:avg(u._tC), dt:avg(u._tD),
       rf:avg(u._fR), cf:avg(u._fC), df:avg(u._fD),
       r:avg(u._tR.concat(u._fR)), c:avg(u._tC.concat(u._fC)), d:avg(u._tD.concat(u._fD)),
@@ -49,11 +50,27 @@ function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMe
   useEffect(function() {
     if (!authUser) return;
     setProfilesLoading(true);
-    apiGet("/worth/matches").then(function(rows) {
-      const transformed = transformMatches(rows);
-      if (transformed.length > 0) setProfiles(transformed);
-    }).catch(function() {
-      // Keep hardcoded PROFILES on error
+    Promise.allSettled([
+      apiGet("/worth/matches"),
+      apiGet("/worth/rankings"),
+    ]).then(function(results) {
+      var matchesResult = results[0];
+      var rankingsResult = results[1];
+      var rows = matchesResult.status === "fulfilled" ? matchesResult.value : [];
+      var rankingsData = rankingsResult.status === "fulfilled" ? rankingsResult.value : null;
+      var transformed = transformMatches(rows);
+      if (transformed.length > 0) {
+        if (rankingsData && Array.isArray(rankingsData.rankings) && rankingsData.rankings.length > 0) {
+          var rankMap = {};
+          rankingsData.rankings.forEach(function(r, i) { rankMap[String(r.user_id)] = i; });
+          transformed.sort(function(a, b) {
+            var ra = rankMap[String(a.id)] !== undefined ? rankMap[String(a.id)] : 9999;
+            var rb = rankMap[String(b.id)] !== undefined ? rankMap[String(b.id)] : 9999;
+            return ra - rb;
+          });
+        }
+        setProfiles(transformed);
+      }
     }).finally(function() {
       setProfilesLoading(false);
     });
