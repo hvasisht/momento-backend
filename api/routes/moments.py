@@ -3,9 +3,29 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from pydantic import BaseModel
 from typing import Optional
+import asyncio
 import hashlib
+import logging
+import os
+import httpx
 from api.database import get_db
 from api.auth import get_current_user
+
+logger = logging.getLogger(__name__)
+PIPELINE_URL = os.getenv("PIPELINE_URL", "https://moment-pipeline-329431711809.us-central1.run.app/pipeline/run")
+
+
+async def _trigger_pipeline(payload: dict):
+    """Fire-and-forget: POST to Jyothssena's pipeline endpoint. Never blocks or raises."""
+    if not PIPELINE_URL:
+        return
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(PIPELINE_URL, json=payload)
+            resp.raise_for_status()
+            logger.info(f"Pipeline triggered OK: {resp.status_code}")
+    except Exception as e:
+        logger.warning(f"Pipeline trigger failed (moment still saved): {e}")
 
 
 def compute_passage_key(book_id: str, passage: str) -> str:
@@ -111,6 +131,17 @@ async def create_moment(
     )
     await db.commit()
     row = result.mappings().fetchone()
+
+    # Trigger Jyothssena's pipeline (fire-and-forget — never blocks the response)
+    asyncio.create_task(_trigger_pipeline({
+        "moment_id":    str(row["id"]),
+        "user_id":      user_id,
+        "book_id":      book_id,
+        "passage_key":  passage_key,
+        "passage":      body.passage,
+        "interpretation": body.interpretation,
+    }))
+
     return {**row_to_dict(row), "book_title": body.book_title}
 
 
