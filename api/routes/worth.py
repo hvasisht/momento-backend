@@ -22,68 +22,87 @@ async def get_worth_matches(
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        text("SELECT first_name, last_name FROM users WHERE firebase_uid = :uid"),
+        text("SELECT id, first_name, last_name FROM users WHERE firebase_uid = :uid"),
         {"uid": user["uid"]},
     )
     row = result.mappings().fetchone()
     if not row:
         raise HTTPException(status_code=404, detail="User not found")
 
-    bq_user_id = make_user_id(row["first_name"] + " " + row["last_name"])
+    user_uuid = str(row["id"])
 
     compat_table = f"`{BQ_PROJECT}.{BQ_DATASET}.{BQ_TABLE_COMPAT}`"
     users_table  = f"`{BQ_PROJECT}.{BQ_DATASET}.{BQ_TABLE_USERS}`"
     book_filter  = "AND c.book_id = @book_id" if book_id else ""
 
-    query = f"""
-        WITH matches AS (
-            SELECT
-                CASE WHEN c.user_a = @user_id THEN c.user_b ELSE c.user_a END AS matched_user_id,
-                c.book_id,
-                c.passage_id,
-                c.confidence,
-                c.verdict,
-                c.dominant_think,
-                c.think_D,
-                c.think_C,
-                c.think_R,
-                c.dominant_feel,
-                c.feel_D,
-                c.feel_C,
-                c.feel_R,
-                c.think_rationale,
-                c.feel_rationale
-            FROM {compat_table} c
-            WHERE (c.user_a = @user_id OR c.user_b = @user_id)
-            {book_filter}
-        )
+    # user_b = Cloud SQL UUID (STRING), user_a = matched synthetic user (INT64 farmhash)
+    compat_query = f"""
         SELECT
-            m.*,
-            u.character_name,
-            u.gender,
-            u.age,
-            u.profession
-        FROM matches m
-        LEFT JOIN {users_table} u ON u.user_id = m.matched_user_id
-        ORDER BY m.confidence DESC
+            c.user_a AS matched_user_id,
+            c.book_id,
+            c.passage_id,
+            c.confidence,
+            c.verdict,
+            c.dominant_think,
+            c.think_D,
+            c.think_C,
+            c.think_R,
+            c.dominant_feel,
+            c.feel_D,
+            c.feel_C,
+            c.feel_R,
+            c.think_rationale,
+            c.feel_rationale
+        FROM {compat_table} c
+        WHERE c.user_b = @user_uuid
+        {book_filter}
+        ORDER BY c.confidence DESC
         LIMIT 50
     """
 
-    params = [bigquery.ScalarQueryParameter("user_id", "INT64", bq_user_id)]
+    # Fetch all synthetic user profiles for Python-side join
+    users_query = f"""
+        SELECT user_id, first_name, last_name, gender, readername
+        FROM {users_table}
+    """
+
+    params = [bigquery.ScalarQueryParameter("user_uuid", "STRING", user_uuid)]
     if book_id:
         params.append(bigquery.ScalarQueryParameter("book_id", "STRING", book_id))
 
     client = get_bq_client()
-    job_config = bigquery.QueryJobConfig(query_parameters=params)
 
     try:
-        rows = await asyncio.to_thread(
-            lambda: list(client.query(query, job_config=job_config).result())
+        compat_rows, user_rows = await asyncio.gather(
+            asyncio.to_thread(
+                lambda: list(client.query(compat_query, job_config=bigquery.QueryJobConfig(query_parameters=params)).result())
+            ),
+            asyncio.to_thread(
+                lambda: list(client.query(users_query).result())
+            ),
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"BigQuery error: {str(e)}")
 
-    return [dict(r.items()) for r in rows]
+    # Build farmhash → profile lookup (user_a INT64 = make_user_id(first_name + last_name))
+    profile_by_hash = {}
+    for u in user_rows:
+        name = f"{u['first_name']} {u['last_name']}"
+        h = make_user_id(name)
+        profile_by_hash[h] = dict(u.items())
+
+    results = []
+    for r in compat_rows:
+        row_dict = dict(r.items())
+        matched_id = row_dict.get("matched_user_id")
+        profile = profile_by_hash.get(matched_id, {})
+        row_dict["character_name"] = f"{profile.get('first_name', 'Unknown')} {profile.get('last_name', '')}".strip()
+        row_dict["gender"] = profile.get("gender")
+        row_dict["age"] = None
+        row_dict["profession"] = profile.get("readername")
+        results.append(row_dict)
+
+    return results
 
 
 @router.get("/worth/profile/{bq_user_id}")
@@ -119,18 +138,18 @@ async def get_worth_rankings(
 ):
     """Fetch ranked compatible readers from the pipeline (triggers BT model refit for this user)."""
     result = await db.execute(
-        text("SELECT first_name, last_name FROM users WHERE firebase_uid = :uid"),
+        text("SELECT id FROM users WHERE firebase_uid = :uid"),
         {"uid": user["uid"]},
     )
     row = result.mappings().fetchone()
     if not row:
         raise HTTPException(status_code=404, detail="User not found")
 
-    bq_user_id = make_user_id(row["first_name"] + " " + row["last_name"])
+    user_uuid = str(row["id"])
 
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
-            resp = await client.get(f"{PIPELINE_BASE}/rankings/{bq_user_id}")
+            resp = await client.get(f"{PIPELINE_BASE}/rankings/{user_uuid}")
             resp.raise_for_status()
             return resp.json()
     except Exception as e:
