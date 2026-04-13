@@ -8,7 +8,6 @@ from sqlalchemy import text
 from api.auth import get_current_user
 from api.database import get_db
 from api.bigquery import BQ_PROJECT, BQ_DATASET, BQ_TABLE_COMPAT, BQ_TABLE_USERS, get_bq_client
-from api.hashing import make_user_id
 
 PIPELINE_BASE = os.getenv("PIPELINE_BASE_URL", "https://moment-pipeline-329431711809.us-central1.run.app")
 
@@ -35,8 +34,8 @@ async def get_worth_matches(
     users_table  = f"`{BQ_PROJECT}.{BQ_DATASET}.{BQ_TABLE_USERS}`"
     book_filter  = "AND c.book_id = @book_id" if book_id else ""
 
-    # user_b = Cloud SQL UUID (STRING), user_a = matched synthetic user (INT64 farmhash)
-    compat_query = f"""
+    # user_b and user_a are both Cloud SQL UUIDs — join directly
+    query = f"""
         SELECT
             c.user_a AS matched_user_id,
             c.book_id,
@@ -52,18 +51,17 @@ async def get_worth_matches(
             c.feel_C,
             c.feel_R,
             c.think_rationale,
-            c.feel_rationale
+            c.feel_rationale,
+            u.first_name,
+            u.last_name,
+            u.gender,
+            u.readername
         FROM {compat_table} c
+        LEFT JOIN {users_table} u ON u.user_id = c.user_a
         WHERE c.user_b = @user_uuid
         {book_filter}
         ORDER BY c.confidence DESC
         LIMIT 50
-    """
-
-    # Fetch all synthetic user profiles for Python-side join
-    users_query = f"""
-        SELECT user_id, first_name, last_name, gender, readername
-        FROM {users_table}
     """
 
     params = [bigquery.ScalarQueryParameter("user_uuid", "STRING", user_uuid)]
@@ -73,33 +71,18 @@ async def get_worth_matches(
     client = get_bq_client()
 
     try:
-        compat_rows, user_rows = await asyncio.gather(
-            asyncio.to_thread(
-                lambda: list(client.query(compat_query, job_config=bigquery.QueryJobConfig(query_parameters=params)).result())
-            ),
-            asyncio.to_thread(
-                lambda: list(client.query(users_query).result())
-            ),
+        rows = await asyncio.to_thread(
+            lambda: list(client.query(query, job_config=bigquery.QueryJobConfig(query_parameters=params)).result())
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"BigQuery error: {str(e)}")
 
-    # Build farmhash → profile lookup (user_a INT64 = make_user_id(first_name + last_name))
-    profile_by_hash = {}
-    for u in user_rows:
-        name = f"{u['first_name']} {u['last_name']}"
-        h = make_user_id(name)
-        profile_by_hash[h] = dict(u.items())
-
     results = []
-    for r in compat_rows:
+    for r in rows:
         row_dict = dict(r.items())
-        matched_id = row_dict.get("matched_user_id")
-        profile = profile_by_hash.get(matched_id, {})
-        row_dict["character_name"] = f"{profile.get('first_name', 'Unknown')} {profile.get('last_name', '')}".strip()
-        row_dict["gender"] = profile.get("gender")
+        row_dict["character_name"] = f"{row_dict.pop('first_name', '') or ''} {row_dict.pop('last_name', '') or ''}".strip() or "Unknown"
         row_dict["age"] = None
-        row_dict["profession"] = profile.get("readername")
+        row_dict["profession"] = row_dict.pop("readername", None)
         results.append(row_dict)
 
     return results
