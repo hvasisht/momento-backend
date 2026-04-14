@@ -501,7 +501,7 @@ function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMe
                   <p className="font-serif" style={{fontSize:12,fontWeight:700,color:"var(--text)",margin:0,lineHeight:1.2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>Across all books</p>
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:3,flexShrink:0}}>
-                  <span className="font-sans" style={{fontSize:7.5,fontWeight:700,letterSpacing:"0.06em",color:"var(--amber)",background:"var(--amber2)",borderRadius:999,padding:"2px 6px",whiteSpace:"nowrap"}}>{userMomentBooks.length} bks</span>
+                  <span className="font-sans" style={{fontSize:7.5,fontWeight:700,letterSpacing:"0.06em",color:"var(--amber)",background:"var(--amber2)",borderRadius:999,padding:"2px 6px",whiteSpace:"nowrap"}}>{userMomentBooks.length} books</span>
                   <button onClick={()=>{setODropOpen(o=>!o);}} title="Filter"
                     style={{display:"flex",alignItems:"center",gap:2,padding:"2px 6px",height:22,background:(oDropOpen||oFilterActive)?"var(--amber2)":"var(--card)",border:`1px solid ${(oDropOpen||oFilterActive)?"var(--amber)":"var(--border)"}`,borderRadius:999,cursor:"pointer",color:(oDropOpen||oFilterActive)?"var(--amber)":"var(--text2)",transition:"all 150ms",flexShrink:0}}>
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
