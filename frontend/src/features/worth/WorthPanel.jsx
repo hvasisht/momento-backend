@@ -470,7 +470,7 @@ function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMe
 
             {/* Book body */}
             {filteredBookProfiles.length > 0 ? (
-              <div style={{background:"var(--card2)",borderRadius:"0 0 14px 14px",flex:1,overflow:"hidden"}}>
+              <div style={{background:"var(--card2)",borderRadius:"0 0 14px 14px",flex:1,overflow:"visible"}}>
                 <ProfileScrollRow profiles={filteredBookProfiles} exitingNames={exitingNames} focusedMoment={focusedMoment} onOpenWhisper={onOpenWhisper} onWave={handleWave}/>
               </div>
             ) : bookProfiles.length > 0 ? (
@@ -528,7 +528,7 @@ function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMe
 
             {/* All-books body */}
             {filteredOverallProfiles.length > 0 ? (
-              <div style={{background:"var(--card2)",borderRadius:"0 0 14px 14px",flex:1,overflow:"hidden"}}>
+              <div style={{background:"var(--card2)",borderRadius:"0 0 14px 14px",flex:1,overflow:"visible"}}>
                 <ProfileScrollRow profiles={filteredOverallProfiles} exitingNames={exitingNames} focusedMoment={focusedMoment} onOpenWhisper={onOpenWhisper} onWave={handleWave}/>
               </div>
             ) : (
