@@ -183,7 +183,7 @@ function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMe
     return list.slice(0, 5);
   })();
   const mFilterActive = mLabelFilter.length > 0 || mRcdFilter;
-  useEffect(()=>{ setMomentoNavIdx(0); }, [filteredMomentoProfiles.length]);
+  useEffect(()=>{ setMomentoNavIdx(0); }, [filteredMomentoProfiles.length, mLabelFilter, mRcdFilter]);
 
   // onFirstProfileShown / onAnotherProfileShown
   const totalVisibleProfiles = new Set([
@@ -316,7 +316,7 @@ function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMe
                 )}
                 {/* Clear focused momento (drag mode) */}
                 {focusedMoment && (
-                <button onClick={onClear} title="Back to latest momento"
+                <button onClick={()=>{setSelectedMomentoId(null);onClear&&onClear();}} title="Back to latest momento"
                   style={{flexShrink:0,width:18,height:18,borderRadius:"50%",background:"transparent",border:"1px solid rgba(139,105,20,0.25)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,color:"var(--text2)",lineHeight:1,marginLeft:-1}}>×</button>
                 )}
                 {/* Filter chip */}
