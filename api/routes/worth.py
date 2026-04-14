@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from api.auth import get_current_user
 from api.database import get_db
-from api.bigquery import BQ_PROJECT, BQ_DATASET, BQ_TABLE_COMPAT, BQ_TABLE_USERS, get_bq_client
+from api.bigquery import BQ_PROJECT, BQ_DATASET, BQ_TABLE_COMPAT, BQ_TABLE_USERS, BQ_TABLE_BOOK_COMPAT, BQ_TABLE_PROFILE_COMPAT, get_bq_client
 
 PIPELINE_BASE = os.getenv("PIPELINE_BASE_URL", "https://moment-pipeline-329431711809.us-central1.run.app")
 
@@ -137,3 +137,117 @@ async def get_worth_rankings(
             return resp.json()
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Rankings unavailable: {str(e)}")
+
+
+@router.get("/worth/book-compatibility")
+async def get_book_compatibility(
+    book_id: str = Query(..., description="Cloud SQL book UUID"),
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Book-level compatibility scores for the logged-in user + a specific book."""
+    result = await db.execute(
+        text("SELECT id FROM users WHERE firebase_uid = :uid"),
+        {"uid": user["uid"]},
+    )
+    row = result.mappings().fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user_uuid = str(row["id"])
+
+    book_compat_table = f"`{BQ_PROJECT}.{BQ_DATASET}.{BQ_TABLE_BOOK_COMPAT}`"
+    users_table       = f"`{BQ_PROJECT}.{BQ_DATASET}.{BQ_TABLE_USERS}`"
+
+    query = f"""
+        SELECT
+            c.user_a,
+            c.book_id,
+            c.think_R, c.think_C, c.think_D,
+            c.feel_R,  c.feel_C,  c.feel_D,
+            c.dominant_think, c.dominant_feel,
+            c.verdict, c.confidence, c.passage_count, c.timestamp,
+            u.first_name, u.last_name, u.gender, u.readername
+        FROM {book_compat_table} c
+        LEFT JOIN {users_table} u ON u.user_id = c.user_a
+        WHERE c.user_b = @user_uuid
+          AND c.book_id = @book_id
+        ORDER BY c.confidence DESC
+    """
+
+    params = [
+        bigquery.ScalarQueryParameter("user_uuid", "STRING", user_uuid),
+        bigquery.ScalarQueryParameter("book_id",   "STRING", book_id),
+    ]
+
+    client = get_bq_client()
+    try:
+        rows = await asyncio.to_thread(
+            lambda: list(client.query(query, job_config=bigquery.QueryJobConfig(query_parameters=params)).result())
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"BigQuery error: {str(e)}")
+
+    results = []
+    for r in rows:
+        row_dict = dict(r.items())
+        row_dict["character_name"] = f"{row_dict.pop('first_name', '') or ''} {row_dict.pop('last_name', '') or ''}".strip() or "Unknown"
+        row_dict["profession"] = row_dict.pop("readername", None)
+        results.append(row_dict)
+
+    return results
+
+
+@router.get("/worth/profile-compatibility")
+async def get_profile_compatibility(
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Profile-level (across all books) compatibility scores for the logged-in user."""
+    result = await db.execute(
+        text("SELECT id FROM users WHERE firebase_uid = :uid"),
+        {"uid": user["uid"]},
+    )
+    row = result.mappings().fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user_uuid = str(row["id"])
+
+    profile_compat_table = f"`{BQ_PROJECT}.{BQ_DATASET}.{BQ_TABLE_PROFILE_COMPAT}`"
+    users_table          = f"`{BQ_PROJECT}.{BQ_DATASET}.{BQ_TABLE_USERS}`"
+
+    query = f"""
+        SELECT
+            c.user_a,
+            c.think_R, c.think_C, c.think_D,
+            c.feel_R,  c.feel_C,  c.feel_D,
+            c.dominant_think, c.dominant_feel,
+            c.verdict, c.confidence, c.passage_count, c.book_count, c.timestamp,
+            u.first_name, u.last_name, u.gender, u.readername
+        FROM {profile_compat_table} c
+        LEFT JOIN {users_table} u ON u.user_id = c.user_a
+        WHERE c.user_b = @user_uuid
+        ORDER BY c.confidence DESC
+    """
+
+    params = [
+        bigquery.ScalarQueryParameter("user_uuid", "STRING", user_uuid),
+    ]
+
+    client = get_bq_client()
+    try:
+        rows = await asyncio.to_thread(
+            lambda: list(client.query(query, job_config=bigquery.QueryJobConfig(query_parameters=params)).result())
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"BigQuery error: {str(e)}")
+
+    results = []
+    for r in rows:
+        row_dict = dict(r.items())
+        row_dict["character_name"] = f"{row_dict.pop('first_name', '') or ''} {row_dict.pop('last_name', '') or ''}".strip() or "Unknown"
+        row_dict["profession"] = row_dict.pop("readername", None)
+        results.append(row_dict)
+
+    return results
