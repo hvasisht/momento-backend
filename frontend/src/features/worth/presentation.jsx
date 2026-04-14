@@ -288,15 +288,6 @@ function CardNavigator({profiles, exitingNames, cardWidth=300, cardHeight=380, f
         <div style={{position:"absolute",left:cardWidth+10,bottom:13,height:40,zIndex:2,pointerEvents:"none",display:"flex",flexDirection:"column",justifyContent:"center",gap:4}} />
 
         <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"space-between",alignItems:"stretch",gap:8,padding:"14px 18px 18px",minWidth:0,animation:"fadeSlideUp 400ms ease both"}}>
-          <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",paddingBottom:2}}>
-            <div>
-              <span style={{fontFamily:"'Playfair Display',serif",fontSize:20,fontWeight:700,color:"var(--amber)",letterSpacing:"0.02em",lineHeight:1}}>{profile.name}</span>
-            </div>
-            <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:6.5,letterSpacing:"0.11em",textTransform:"uppercase",color:"var(--text2)",margin:"4px 0 0",fontWeight:500,textAlign:"right",maxWidth:112,lineHeight:1.4}}>
-              Based on your shared <span style={{color:"var(--amber)",fontWeight:700}}>Moments</span>
-            </p>
-          </div>
-
           <div style={{background:"linear-gradient(180deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 90%, var(--amber2) 10%) 100%)",borderRadius:12,padding:"0 20px 10px",boxShadow:"inset 0 1px 0 rgba(255,255,255,0.55), 0 6px 16px rgba(139,105,20,0.05)",position:"relative",overflow:"hidden"}}>
             <div style={{margin:"0 -20px 10px",padding:"5px 14px",background:"rgba(196,160,85,0.13)",borderRadius:"12px 12px 0 0",borderBottom:"1px solid rgba(196,160,85,0.18)"}}>
               <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:6.5,letterSpacing:"0.18em",textTransform:"lowercase",color:"var(--amber)",fontWeight:700,opacity:0.75,userSelect:"none"}}>Closeness</span>
