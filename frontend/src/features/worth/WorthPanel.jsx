@@ -330,21 +330,24 @@ function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMe
               </div>
             </div>
 
-            {/* Momento picker dropdown */}
+            {/* Momento picker dropdown — shows actual MomentCards */}
             {momentoDropOpen && (
               <>
                 <div onClick={()=>setMomentoDropOpen(false)} style={{position:"fixed",inset:0,zIndex:49}}/>
-                <div style={{position:"absolute",top:"calc(100% + 4px)",left:0,right:0,zIndex:50,background:"var(--bg)",border:"1px solid rgba(196,160,85,0.4)",borderRadius:10,boxShadow:"0 6px 22px rgba(139,105,20,0.14)",overflow:"hidden"}}>
-                  <div style={{padding:"8px 10px",maxHeight:190,overflowY:"auto"}} className="panel-scroll">
+                <div style={{position:"absolute",top:"calc(100% + 4px)",left:0,right:0,zIndex:50,background:"var(--bg)",border:"1px solid rgba(196,160,85,0.4)",borderRadius:12,boxShadow:"0 8px 28px rgba(139,105,20,0.18)",overflow:"hidden"}}>
+                  <div style={{padding:"10px 12px",maxHeight:340,overflowY:"auto",display:"flex",flexDirection:"column",gap:8}} className="panel-scroll">
                     {userMomentos.slice().reverse().map(function(m, i) {
                       const isSelected = activeMomento && m.id === activeMomento.id;
                       return (
-                        <button key={m.id||i}
-                          onClick={()=>{setSelectedMomentoId(m.id);if(focusedMoment)onClear&&onClear();setMomentoDropOpen(false);}}
-                          style={{width:"100%",display:"flex",flexDirection:"column",alignItems:"flex-start",gap:2,background:isSelected?"var(--amber2)":"none",border:isSelected?"1px solid rgba(196,160,85,0.5)":"1px solid transparent",borderRadius:7,padding:"7px 10px",cursor:"pointer",textAlign:"left",transition:"background 150ms",marginBottom:4}}>
-                          <p className="font-reading" style={{fontSize:10.5,fontStyle:"italic",color:"var(--text)",margin:0,lineHeight:1.5,overflow:"hidden",textOverflow:"ellipsis",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>"{(m.passage||"").slice(0,80)}{m.passage&&m.passage.length>80?"…":""}"</p>
-                          <p className="font-sans" style={{fontSize:8.5,color:"var(--amber)",margin:0,fontWeight:600}}>{m.book}{m.pg?" · p."+m.pg:""}</p>
-                        </button>
+                        <div key={m.id||i}
+                          style={{borderRadius:5,outline:isSelected?"2px solid var(--amber)":"2px solid transparent",outlineOffset:2,transition:"outline 150ms",cursor:"pointer"}}>
+                          <MomentCard
+                            moment={m}
+                            passageFirst={false}
+                            onDragStart={()=>{}}
+                            onClick={()=>{setSelectedMomentoId(m.id);if(focusedMoment)onClear&&onClear();setMomentoDropOpen(false);}}
+                          />
+                        </div>
                       );
                     })}
                   </div>
