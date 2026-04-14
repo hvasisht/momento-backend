@@ -268,10 +268,14 @@ function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMe
       </div>
       )}
 
-      <div className={`panel-scroll${sectionCount===4?" scroll-dim":""}`} style={{flex:1,overflowY:"auto",scrollbarColor:sectionCount===4?"rgba(139,105,20,0.04) transparent":undefined}}>
+      <div className={`panel-scroll${sectionCount===4?" scroll-dim":""}`} style={{flex:1,overflowY:"auto",scrollbarColor:sectionCount===4?"rgba(139,105,20,0.04) transparent":undefined,position:"relative"}}>
+        {/* Full-panel dark overlay when dragging — top container sits above it via z-index */}
+        {isDraggingToWorth && (
+          <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.22)",pointerEvents:"none",zIndex:5}}/>
+        )}
 
         {/* ══ TOP: Momento-level container (full width, CardNavigator style) ══ */}
-        <div style={{background:"var(--bg)",padding:"12px 16px 0"}}>
+        <div style={{background:"var(--bg)",padding:"12px 16px 0",position:"relative",zIndex:isDraggingToWorth?6:undefined}}>
           <div style={{borderRadius:14,border:`1.5px solid ${isDraggingToWorth?"var(--amber)":"rgba(196,160,85,0.5)"}`,position:"relative",transition:"border-color 150ms"}}>
           {isDraggingToWorth && (
             <div style={{position:"absolute",inset:0,borderRadius:14,background:"rgba(196,160,85,0.13)",display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none",zIndex:10}}>
@@ -400,10 +404,7 @@ function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMe
         </div>
 
         {/* ══ BOTTOM ROW: Book + All books side by side ══ */}
-        <div style={{display:"flex",gap:8,padding:"8px 16px 14px",alignItems:"stretch",position:"relative"}}>
-          {isDraggingToWorth && (
-            <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.18)",borderRadius:14,pointerEvents:"none",zIndex:10,margin:"0 0 0 0"}}/>
-          )}
+        <div style={{display:"flex",gap:8,padding:"8px 16px 14px",alignItems:"stretch"}}>
 
           {/* ── Left: Book-level container (compact, ProfileScrollRow style) ── */}
           <div style={{flex:1,minWidth:0,borderRadius:14,border:"1px solid rgba(139,105,20,0.18)",boxShadow:"0 8px 22px rgba(139,105,20,0.10),0 1px 4px rgba(0,0,0,0.05)",position:"relative",display:"flex",flexDirection:"column",overflow:"visible"}}>
