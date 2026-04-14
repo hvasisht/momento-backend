@@ -336,6 +336,7 @@ function CardNavigator({profiles, exitingNames, cardWidth=300, cardHeight=380, f
                 </div>
               )}
             </div>
+            {sectionCount!==2 && (
             <div style={{display:"flex",gap:8,alignItems:"stretch",justifyContent:"flex-start",marginTop:9,paddingTop:8,borderTop:"1px solid rgba(139,105,20,0.08)"}}>
               <div style={{background:"var(--card)",borderRadius:10,padding:"10px 13px",display:"flex",alignItems:"center",gap:10,border:"1px solid var(--border2)",flex:1,minWidth:0}}>
                 <div>
@@ -364,8 +365,8 @@ function CardNavigator({profiles, exitingNames, cardWidth=300, cardHeight=380, f
                   </div>
                 </div>
               </div>
-
             </div>
+            )}
           </div>
           <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:5,padding:"0 18px 2px"}}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(139,105,20,0.45)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
