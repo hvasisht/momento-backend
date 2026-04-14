@@ -2,9 +2,18 @@
 
 function GlyphWithHoverBars({tColor, fColor, rt, ct, dt, rf, cf, df, domLabelFull, firstName}) {
   const [hovered, setHovered] = useState(false);
+  const [tooltipPos, setTooltipPos] = useState({top:0,right:0});
+  const glyphRef = useRef(null);
+  const handleMouseEnter = () => {
+    if(glyphRef.current) {
+      const rect = glyphRef.current.getBoundingClientRect();
+      setTooltipPos({top: rect.top + rect.height/2, right: window.innerWidth - rect.left + 8});
+    }
+    setHovered(true);
+  };
   return (
-    <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,position:"relative"}}
-      onMouseEnter={()=>setHovered(true)} onMouseLeave={()=>setHovered(false)}>
+    <div ref={glyphRef} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,position:"relative"}}
+      onMouseEnter={handleMouseEnter} onMouseLeave={()=>setHovered(false)}>
       <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
         <p style={{fontFamily:"'Playfair Display',serif",fontSize:11.5,fontWeight:400,fontStyle:"italic",fontVariantCaps:"small-caps",letterSpacing:"0.08em",color:"var(--amber)",margin:"0 0 5px",lineHeight:1,textAlign:"center"}}>
           Signature
@@ -17,11 +26,12 @@ function GlyphWithHoverBars({tColor, fColor, rt, ct, dt, rf, cf, df, domLabelFul
           <text x="27" y="26" fontFamily="'DM Sans',sans-serif" fontWeight="700" fontSize="9" fill={fColor} textAnchor="middle" letterSpacing="0.5">{domLabelFull(rf,cf,df).slice(0,3).toUpperCase()}</text>
         </svg>
       </div>
-      {hovered && (
-        <div style={{position:"absolute",right:"calc(50% + 44px)",top:"50%",transform:"translateY(-50%)",zIndex:10,background:"var(--bg)",border:"1px solid var(--border)",borderRadius:10,padding:"10px 14px",boxShadow:"0 6px 20px rgba(139,105,20,0.14)",display:"flex",flexDirection:"column",gap:8,width:300}}>
+      {hovered && ReactDOM.createPortal(
+        <div style={{position:"fixed",right:tooltipPos.right,top:tooltipPos.top,transform:"translateY(-50%)",zIndex:99999,background:"var(--bg)",border:"1px solid var(--border)",borderRadius:10,padding:"10px 14px",boxShadow:"0 6px 20px rgba(139,105,20,0.14)",display:"flex",flexDirection:"column",gap:8,width:300,pointerEvents:"none"}}>
           <MatchBar label="think" resonate={rt} contradict={ct} diverge={dt} name={firstName} />
           <MatchBar label="feel" resonate={rf} contradict={cf} diverge={df} name={firstName} />
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
@@ -327,21 +337,21 @@ function CardNavigator({profiles, exitingNames, cardWidth=300, cardHeight=380, f
               )}
             </div>
             <div style={{display:"flex",gap:8,alignItems:"stretch",justifyContent:"flex-start",marginTop:9,paddingTop:8,borderTop:"1px solid rgba(139,105,20,0.08)"}}>
-              <div style={{background:"var(--card)",borderRadius:10,padding:"10px 13px",display:"flex",alignItems:"center",gap:10,border:"1px solid var(--border2)",flex:"0 0 auto",minWidth:132}}>
+              <div style={{background:"var(--card)",borderRadius:10,padding:"10px 13px",display:"flex",alignItems:"center",gap:10,border:"1px solid var(--border2)",flex:1,minWidth:0}}>
                 <div>
                   <div style={{display:"flex",alignItems:"baseline",gap:3}}>
                     <span style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:"var(--amber)",lineHeight:1}}>{profile.commonBooks||0}</span>
                     <span style={{fontSize:11,color:"rgba(139,105,20,0.35)"}}>/</span>
                     <span style={{fontFamily:"'Playfair Display',serif",fontSize:14,color:"var(--text2)"}}>{SHELF_BOOKS.length}</span>
                   </div>
-                  <div style={{display:"flex",alignItems:"center",gap:4,marginTop:3}}>
+                  <div style={{display:"flex",alignItems:"center",gap:4,marginTop:3,flexWrap:"wrap"}}>
                     <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:8,color:"var(--amber)",letterSpacing:"0.07em",textTransform:"uppercase",fontWeight:600}}>Books</span>
                     <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:8,color:"var(--text)",letterSpacing:"0.07em",textTransform:"uppercase"}}>in common</span>
                     <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:7,color:"var(--amber)",background:"var(--amber2)",borderRadius:3,padding:"1px 4px",letterSpacing:"0.05em"}}>{overlapLabel}</span>
                   </div>
                 </div>
               </div>
-              <div style={{background:"var(--card)",borderRadius:10,padding:"10px 13px",display:"flex",alignItems:"center",gap:10,border:"1px solid var(--border2)",flex:"0 0 auto",minWidth:132}}>
+              <div style={{background:"var(--card)",borderRadius:10,padding:"10px 13px",display:"flex",alignItems:"center",gap:10,border:"1px solid var(--border2)",flex:1,minWidth:0}}>
                 <div>
                   <div style={{display:"flex",alignItems:"baseline",gap:3}}>
                     <span style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:"var(--amber)",lineHeight:1}}>{profile.momentCount||0}</span>
