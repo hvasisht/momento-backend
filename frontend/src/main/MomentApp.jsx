@@ -477,6 +477,8 @@ function MomentApp() {
         } else if(face==="moments"){
           setExpandedMomentId(droppedMoment.id||null);
           expandSection(1);
+        } else if(face==="worth"){
+          setFocusedMoments(p=>({...p,worth:droppedMoment}));
         } else {
           if(face==="sharing"){
             if(readerName){
@@ -592,6 +594,10 @@ function MomentApp() {
         ) : isDropTarget && section.id==="read" ? (
           <div style={{position:"absolute",inset:0,background:"rgba(139,105,20,0.08)",display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none",zIndex:50}}>
             <div style={{padding:"10px 20px",background:section.accent,borderRadius:20,color:"#fff",fontSize:12,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase",boxShadow:"0 4px 16px rgba(0,0,0,0.15)"}}>Drop to open passage</div>
+          </div>
+        ) : isDropTarget && section.id==="worth" ? (
+          <div style={{position:"absolute",inset:0,background:"rgba(139,105,20,0.08)",display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none",zIndex:50}}>
+            <div style={{padding:"10px 20px",background:section.accent,borderRadius:20,color:"#fff",fontSize:12,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase",boxShadow:"0 4px 16px rgba(0,0,0,0.15)"}}>Drop to find close readers</div>
           </div>
         ) : null}
       </div>

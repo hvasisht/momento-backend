@@ -357,7 +357,7 @@ function CardNavigator({profiles, exitingNames, cardWidth=300, cardHeight=380, f
 
             </div>
           </div>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"0 0 2px"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:5,padding:"0 18px 2px"}}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(139,105,20,0.45)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
             </svg>

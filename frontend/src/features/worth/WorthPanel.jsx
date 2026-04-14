@@ -370,6 +370,11 @@ function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMe
               <div style={{width:2,alignSelf:"stretch",background:"rgba(139,105,20,0.2)",borderRadius:1,flexShrink:0}}/>
               <p className="font-sans" style={{fontSize:10,color:"var(--text2)",margin:0,lineHeight:1.6}}>Capture Moments and make them momentos to find close Readers for those.</p>
             </div>
+          ) : (focusedMoment && !focusedMoment.interpretation) ? (
+            <div style={{padding:"20px 18px 24px",display:"flex",alignItems:"flex-start",gap:12,background:"linear-gradient(180deg, var(--card) 0%, color-mix(in srgb, var(--card) 92%, var(--amber2) 8%) 100%)",borderTop:"none",borderRadius:"0 0 14px 14px"}}>
+              <div style={{width:2,alignSelf:"stretch",background:"rgba(139,105,20,0.2)",borderRadius:1,flexShrink:0}}/>
+              <p className="font-sans" style={{fontSize:10,color:"var(--text2)",margin:0,lineHeight:1.6}}>Make this a momento to find close readers.</p>
+            </div>
           ) : filteredMomentoProfiles.length > 0 ? (
             <CardNavigator profiles={filteredMomentoProfiles} exitingNames={exitingNames} cardWidth={265} cardHeight={420} focusedMoment={focusedMoment} onOpenWhisper={onOpenWhisper} onWave={handleWave} sectionCount={sectionCount}/>
           ) : rawMomentoProfiles.length > 0 ? (
@@ -383,7 +388,7 @@ function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMe
           ) : (
             <div style={{padding:"20px 18px 24px",display:"flex",alignItems:"flex-start",gap:12,background:"linear-gradient(180deg, var(--card) 0%, color-mix(in srgb, var(--card) 92%, var(--amber2) 8%) 100%)",borderTop:"none",borderRadius:"0 0 14px 14px"}}>
               <div style={{width:2,alignSelf:"stretch",background:"rgba(139,105,20,0.2)",borderRadius:1,flexShrink:0}}/>
-              <p className="font-sans" style={{fontSize:10,color:"var(--text2)",margin:0,lineHeight:1.6}}>No close readers found for this momento yet. Capture more to discover your readers.</p>
+              <p className="font-sans" style={{fontSize:10,color:"var(--text2)",margin:0,lineHeight:1.6}}>No close readers found for this momento yet. Keep reading and capturing moments.</p>
             </div>
           )}
           </div>{/* end shadow wrapper */}
