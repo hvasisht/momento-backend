@@ -343,7 +343,7 @@ function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMe
                           style={{borderRadius:5,outline:isSelected?"2px solid var(--amber)":"2px solid transparent",outlineOffset:2,transition:"outline 150ms",cursor:"pointer"}}>
                           <MomentCard
                             moment={m}
-                            passageFirst={false}
+                            passageFirst={true}
                             onDragStart={()=>{}}
                             onClick={()=>{setSelectedMomentoId(m.id);if(focusedMoment)onClear&&onClear();setMomentoDropOpen(false);}}
                           />
