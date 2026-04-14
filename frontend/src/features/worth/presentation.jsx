@@ -339,28 +339,28 @@ function CardNavigator({profiles, exitingNames, cardWidth=300, cardHeight=380, f
             </div>
             {sectionCount!==2 && (
             <div style={{display:"flex",gap:8,alignItems:"stretch",justifyContent:"flex-start",marginTop:9,paddingTop:8,borderTop:"1px solid rgba(139,105,20,0.08)"}}>
-              <div style={{background:"var(--card)",borderRadius:10,padding:"10px 13px",display:"flex",alignItems:"center",gap:10,border:"1px solid var(--border2)",flex:1,minWidth:0}}>
-                <div>
+              <div style={{background:"var(--card)",borderRadius:10,padding:"10px 13px",display:"flex",alignItems:"center",justifyContent:"center",gap:10,border:"1px solid var(--border2)",flex:1,minWidth:0}}>
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
                   <div style={{display:"flex",alignItems:"baseline",gap:3}}>
                     <span style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:"var(--amber)",lineHeight:1}}>{profile.commonBooks||0}</span>
                     <span style={{fontSize:11,color:"rgba(139,105,20,0.35)"}}>/</span>
                     <span style={{fontFamily:"'Playfair Display',serif",fontSize:14,color:"var(--text2)"}}>{SHELF_BOOKS.length}</span>
                   </div>
-                  <div style={{display:"flex",alignItems:"center",gap:4,marginTop:3,flexWrap:"wrap"}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:4,marginTop:3,flexWrap:"wrap"}}>
                     <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:8,color:"var(--amber)",letterSpacing:"0.07em",textTransform:"uppercase",fontWeight:600}}>Books</span>
                     <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:8,color:"var(--text)",letterSpacing:"0.07em",textTransform:"uppercase"}}>in common</span>
                     <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:7,color:"var(--amber)",background:"var(--amber2)",borderRadius:3,padding:"1px 4px",letterSpacing:"0.05em"}}>{overlapLabel}</span>
                   </div>
                 </div>
               </div>
-              <div style={{background:"var(--card)",borderRadius:10,padding:"10px 13px",display:"flex",alignItems:"center",gap:10,border:"1px solid var(--border2)",flex:1,minWidth:0}}>
-                <div>
+              <div style={{background:"var(--card)",borderRadius:10,padding:"10px 13px",display:"flex",alignItems:"center",justifyContent:"center",gap:10,border:"1px solid var(--border2)",flex:1,minWidth:0}}>
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
                   <div style={{display:"flex",alignItems:"baseline",gap:3}}>
                     <span style={{fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:"var(--amber)",lineHeight:1}}>{profile.momentCount||0}</span>
                     <span style={{fontSize:11,color:"rgba(139,105,20,0.35)"}}>/</span>
                     <span style={{fontFamily:"'Playfair Display',serif",fontSize:14,color:"var(--text2)"}}>{profile.moments?.length||0}</span>
                   </div>
-                  <div style={{display:"flex",alignItems:"center",gap:4,marginTop:3}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:4,marginTop:3}}>
                     <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:8,color:"var(--amber)",letterSpacing:"0.06em",textTransform:"uppercase",fontWeight:600}}>Shared</span>
                     <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:8,color:"var(--text)",letterSpacing:"0.06em",textTransform:"uppercase"}}>moments</span>
                   </div>
