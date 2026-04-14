@@ -357,6 +357,12 @@ function CardNavigator({profiles, exitingNames, cardWidth=300, cardHeight=380, f
 
             </div>
           </div>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:5,padding:"0 0 2px"}}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(139,105,20,0.45)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            <span className="font-sans" style={{fontSize:9,color:"rgba(139,105,20,0.45)",letterSpacing:"0.02em",fontStyle:"italic"}}>Drag and drop a momento to find readers</span>
+          </div>
           <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,paddingRight:60}}>
             <button
               onClick={()=>{ if(waveState==="none"){setWaveState("waved");onWave&&onWave(profile);}else if(waveState==="waved")setWaveState("close"); }}
