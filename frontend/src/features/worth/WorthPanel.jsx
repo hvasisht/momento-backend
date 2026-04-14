@@ -41,7 +41,7 @@ function transformMatches(rows) {
   });
 }
 
-function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMessage, activeWhisper, onOpenWhisper, onCloseWhisper, onSnip, snippedMoments, openBookInRead, lastOpenedBook, onOpenMoments, onWave, onAddWaved, wavedNames: wavedNamesProp, hideHeader, sectionCount=1, onFirstProfileShown, onAnotherProfileShown}) {
+function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMessage, activeWhisper, onOpenWhisper, onCloseWhisper, onSnip, snippedMoments, openBookInRead, lastOpenedBook, onOpenMoments, onWave, onAddWaved, wavedNames: wavedNamesProp, hideHeader, sectionCount=1, onFirstProfileShown, onAnotherProfileShown, isDraggingToWorth=false}) {
   const allMoments = [...(snippedMoments||[]), ...MOMENTS_DATA];
 
   const [profiles, setProfiles] = useState(PROFILES);
@@ -272,7 +272,12 @@ function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMe
 
         {/* ══ TOP: Momento-level container (full width, CardNavigator style) ══ */}
         <div style={{background:"var(--bg)",padding:"12px 16px 0"}}>
-          <div style={{borderRadius:14,border:"1.5px solid rgba(196,160,85,0.5)"}}>
+          <div style={{borderRadius:14,border:`1.5px solid ${isDraggingToWorth?"var(--amber)":"rgba(196,160,85,0.5)"}`,position:"relative",transition:"border-color 150ms"}}>
+          {isDraggingToWorth && (
+            <div style={{position:"absolute",inset:0,borderRadius:14,background:"rgba(196,160,85,0.13)",display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none",zIndex:10}}>
+              <div style={{padding:"10px 22px",background:"var(--amber)",borderRadius:20,color:"#fff",fontSize:12,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase",boxShadow:"0 4px 16px rgba(139,105,20,0.35)"}}>Drop to find close readers</div>
+            </div>
+          )}
           <div style={{position:"relative"}}>
             {/* Header */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"11px 14px 9px",background:"var(--card)",borderRadius:"14px 14px 0 0",borderBottom:"1.5px solid rgba(196,160,85,0.5)"}}>
@@ -395,7 +400,10 @@ function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMe
         </div>
 
         {/* ══ BOTTOM ROW: Book + All books side by side ══ */}
-        <div style={{display:"flex",gap:8,padding:"8px 16px 14px",alignItems:"stretch"}}>
+        <div style={{display:"flex",gap:8,padding:"8px 16px 14px",alignItems:"stretch",position:"relative"}}>
+          {isDraggingToWorth && (
+            <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.18)",borderRadius:14,pointerEvents:"none",zIndex:10,margin:"0 0 0 0"}}/>
+          )}
 
           {/* ── Left: Book-level container (compact, ProfileScrollRow style) ── */}
           <div style={{flex:1,minWidth:0,borderRadius:14,border:"1px solid rgba(139,105,20,0.18)",boxShadow:"0 8px 22px rgba(139,105,20,0.10),0 1px 4px rgba(0,0,0,0.05)",position:"relative",display:"flex",flexDirection:"column",overflow:"visible"}}>
