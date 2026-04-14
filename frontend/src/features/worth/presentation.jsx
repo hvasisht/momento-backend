@@ -111,7 +111,7 @@ function ProfileScrollRow({profiles, showTeaser=false, cardWidth=235, cardHeight
   );
 }
 
-function CardNavigator({profiles, exitingNames, cardWidth=300, cardHeight=380, focusedMoment, onOpenWhisper, onWave, sectionCount=1}) {
+function CardNavigator({profiles, exitingNames, cardWidth=300, cardHeight=380, focusedMoment, onOpenWhisper, onWave, sectionCount=1, navIdx=0}) {
   const [idx, setIdx] = useState(0);
   const [waveState, setWaveState] = useState("none");
   const [openMomentTick, setOpenMomentTick] = useState(0);
@@ -160,9 +160,26 @@ function CardNavigator({profiles, exitingNames, cardWidth=300, cardHeight=380, f
   const goNext = ()=>setIdx(i=>(i+1)%total);
   const hasMomentos = (profile.moments?.length || 0) > 0;
 
+  if(sectionCount===4) {
+    const nav4Profile = visibleProfiles[Math.min(navIdx, visibleProfiles.length-1)];
+    return (
+      <div style={{borderRadius:"0 0 14px 14px",border:"1.5px solid rgba(196,160,85,0.5)",borderTop:"none",overflow:"hidden",background:"var(--card)"}}>
+        <ProfileScrollRow
+          profiles={nav4Profile ? [nav4Profile] : []}
+          exitingNames={exitingNames}
+          focusedMoment={focusedMoment}
+          onOpenWhisper={onOpenWhisper}
+          onWave={onWave}
+          cardWidth={cardWidth}
+          cardHeight={cardHeight}
+        />
+      </div>
+    );
+  }
+
   const isExiting = exitingNames?.has(profile?.name);
 
-  if(sectionCount===3 || sectionCount===4) {
+  if(sectionCount===3) {
     return (
       <div style={{padding:0,position:"relative"}}>
         <div style={{height:cardHeight,borderRadius:"0 0 14px 14px",background:"var(--card)",border:"1.5px solid rgba(196,160,85,0.5)",borderTop:"none",overflow:"hidden",display:"flex",touchAction:"pan-y",opacity:isExiting?0:1,transform:isExiting?"scale(0.97) translateY(8px)":"none",transition:"opacity 300ms ease, transform 300ms ease"}}

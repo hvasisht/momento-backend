@@ -98,6 +98,7 @@ function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMe
   const [mLabelFilter, setMLabelFilter] = useState([]);
   const [mRcdFilter, setMRcdFilter] = useState(null);
   const [mFilterDropOpen, setMFilterDropOpen] = useState(false);
+  const [momentoNavIdx, setMomentoNavIdx] = useState(0);
 
   const wavedNames = wavedNamesProp || new Set();
   const [exitingNames, setExitingNames] = useState(new Set());
@@ -182,6 +183,7 @@ function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMe
     return list.slice(0, 5);
   })();
   const mFilterActive = mLabelFilter.length > 0 || mRcdFilter;
+  useEffect(()=>{ setMomentoNavIdx(0); }, [filteredMomentoProfiles.length]);
 
   // onFirstProfileShown / onAnotherProfileShown
   const totalVisibleProfiles = new Set([
@@ -331,10 +333,16 @@ function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMe
                     </span>
                   )}
                 </button>
-                {sectionCount===4 && (
-                  <span className="font-sans" style={{fontSize:8,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",color:"rgba(139,105,20,0.55)",whiteSpace:"nowrap",marginLeft:4}}>
-                    {filteredMomentoProfiles.length} {filteredMomentoProfiles.length===1?"reader":"readers"}
-                  </span>
+                {sectionCount===4 && filteredMomentoProfiles.length > 0 && (
+                  <div style={{display:"flex",alignItems:"center",gap:3,background:"rgba(196,160,85,0.10)",borderRadius:999,padding:"3px 5px",marginLeft:2}}>
+                    <button onClick={()=>setMomentoNavIdx(i=>(i-1+filteredMomentoProfiles.length)%filteredMomentoProfiles.length)} disabled={filteredMomentoProfiles.length<=1} style={{width:18,height:18,borderRadius:"50%",border:"1.4px solid var(--amber)",background:"transparent",cursor:filteredMomentoProfiles.length>1?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--amber)",opacity:filteredMomentoProfiles.length>1?1:0.4,padding:0}}>
+                      <svg width="7" height="7" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </button>
+                    <span className="font-sans" style={{fontSize:7.5,color:"var(--text2)",letterSpacing:"0.1em",textTransform:"uppercase",minWidth:20,textAlign:"center"}}>{momentoNavIdx+1}/{filteredMomentoProfiles.length}</span>
+                    <button onClick={()=>setMomentoNavIdx(i=>(i+1)%filteredMomentoProfiles.length)} disabled={filteredMomentoProfiles.length<=1} style={{width:18,height:18,borderRadius:"50%",border:"1.4px solid var(--amber)",background:"transparent",cursor:filteredMomentoProfiles.length>1?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--amber)",opacity:filteredMomentoProfiles.length>1?1:0.4,padding:0}}>
+                      <svg width="7" height="7" viewBox="0 0 14 14" fill="none"><path d="M5 2l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -385,7 +393,7 @@ function WorthPanel({authUser, focusedMoment, onClear, worthMessage, onDismissMe
               <p className="font-sans" style={{fontSize:10,color:"var(--text2)",margin:0,lineHeight:1.6}}>Make this a momento to find close readers.</p>
             </div>
           ) : filteredMomentoProfiles.length > 0 ? (
-            <CardNavigator profiles={filteredMomentoProfiles} exitingNames={exitingNames} cardWidth={265} cardHeight={420} focusedMoment={focusedMoment} onOpenWhisper={onOpenWhisper} onWave={handleWave} sectionCount={sectionCount}/>
+            <CardNavigator profiles={filteredMomentoProfiles} exitingNames={exitingNames} cardWidth={265} cardHeight={420} focusedMoment={focusedMoment} onOpenWhisper={onOpenWhisper} onWave={handleWave} sectionCount={sectionCount} navIdx={momentoNavIdx}/>
           ) : rawMomentoProfiles.length > 0 ? (
             <div style={{padding:"16px 18px 22px",display:"flex",alignItems:"flex-start",gap:12,background:"linear-gradient(180deg, var(--card) 0%, color-mix(in srgb, var(--card) 92%, var(--amber2) 8%) 100%)",borderTop:"none",borderRadius:"0 0 14px 14px"}}>
               <div style={{width:2,alignSelf:"stretch",background:"rgba(139,105,20,0.2)",borderRadius:1,flexShrink:0}}/>
